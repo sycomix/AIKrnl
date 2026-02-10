@@ -44,6 +44,10 @@ build/scheduler.o: src/scheduler/scheduler.c src/scheduler/scheduler.h include/m
 	@mkdir -p build
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/scheduler/scheduler.c -o build/scheduler.o
 
+build/fp_math.o: arch/x86/lib/fp_math.c include/fp_math.h
+	@mkdir -p build
+	$(CC) $(CFLAGS) $(INCLUDES) -mavx512f -c arch/x86/lib/fp_math.c -o build/fp_math.o
+
 tests/test_fp_math: tests/test_fp_math.c build/fp_math.o
 	$(CC) $(CFLAGS) $(INCLUDES) tests/test_fp_math.c build/fp_math.o -o $@ $(LDLIBS)
 

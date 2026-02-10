@@ -1,4 +1,5 @@
-#include "../include/memoryos.h"
+#define _POSIX_C_SOURCE 200809L
+#include <memoryos.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -48,7 +49,7 @@ typedef struct doc_t {
 
 static doc_t docs[MAX_DOCS];
 
-static size_t rounds = 0;
+
 
 int memoryos_init(size_t pool_size_bytes) {
     if (pool) return -1; // already init

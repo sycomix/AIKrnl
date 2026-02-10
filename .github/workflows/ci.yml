@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-12 g++-12 make pkg-config libtool autoconf automake python3 python3-pip
+
+      - name: Build
+        run: |
+          make all
+
+      - name: Run tests
+        run: |
+          make test
+
+      - name: Build Docker image
+        run: |
+          docker build -t aios-test:latest .
+
+  sanitizers:
+    name: Sanitizers (ASAN/TSAN) — report-only
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
+      - id: run-asan
+        name: Run ASAN tests
+        continue-on-error: true
+        run: |
+          export CC=clang
+          set -o pipefail
+          make test-asan 2>&1 | tee sanitizer-asan.log
+
+      - name: Upload ASAN logs (on failure)
+        if: ${{ steps.run-asan.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-asan-log
+          path: sanitizer-asan.log
+
+      - id: run-tsan
+        name: Run TSAN tests
+        continue-on-error: true
+        run: |
+          export CC=clang
+          set -o pipefail
+          make test-tsan 2>&1 | tee sanitizer-tsan.log
+
+      - name: Upload TSAN logs (on failure)
+        if: ${{ steps.run-tsan.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-tsan-log
+          path: sanitizer-tsan.log
+
+      - name: Summary (sanitizers)
+        run: |
+          echo "Sanitizer step completed (report-only); see artifacts for failures."
