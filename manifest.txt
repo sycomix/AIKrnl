@@ -1,0 +1,11 @@
+# Pinned tool manifest (minimal)
+# Update these values explicitly when upgrading the toolchain
+
+gcc: 12.x
+clang: 13.x
+make: 4.3
+binutils: 2.39
+
+# Notes:
+# - CI installs and validates these tool versions per workflow steps in .github/workflows/ci.yml
+# - Library/runtime versions used by modules should be pinned in their own manifests (e.g., Cargo.toml, requirements.txt) when relevant.
